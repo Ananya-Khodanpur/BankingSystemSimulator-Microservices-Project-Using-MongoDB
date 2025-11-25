@@ -1,0 +1,74 @@
+version: "3.8"
+
+services:
+
+  eureka-server:
+    build:
+      context: ./Eureka-Server
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+
+  mongodb:
+    image: mongo:6.0
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  account-service:
+    build:
+      context: ./Account-Service
+    container_name: account-service
+    depends_on:
+      - eureka-server
+      - mongodb
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/accounts_db
+      EUREKA_SERVER: http://eureka-server:8761/eureka/
+
+  notification-service:
+    build:
+      context: ./Notification-Service
+    container_name: notification-service
+    depends_on:
+      - eureka-server
+    ports:
+      - "8083:8083"
+    environment:
+      EUREKA_SERVER: http://eureka-server:8761/eureka/
+
+  transaction-service:
+    build:
+      context: ./Transaction-Service
+    container_name: transaction-service
+    depends_on:
+      - eureka-server
+      - account-service
+      - notification-service
+      - mongodb
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/transactions_db
+      EUREKA_SERVER: http://eureka-server:8761/eureka/
+
+  api-gateway:
+    build:
+      context: ./ApiGateway
+    container_name: api-gateway
+    depends_on:
+      - eureka-server
+      - account-service
+      - transaction-service
+      - notification-service
+    ports:
+      - "8080:8080"
+    environment:
+      EUREKA_SERVER: http://eureka-server:8761/eureka/
+
+volumes:
+  mongo_data:
