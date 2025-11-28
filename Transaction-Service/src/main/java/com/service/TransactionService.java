@@ -4,6 +4,7 @@ import com.document.Transaction;
 import com.document.dto.*;
 import com.enums.TransactionStatus;
 import com.enums.TransactionType;
+import com.exceptions.InvalidException;
 import com.repository.TransactionRepository;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.slf4j.Logger;
@@ -37,12 +38,12 @@ public class TransactionService {
 
     // Deposit
     @CircuitBreaker(name = "accountService", fallbackMethod = "accountServiceFallback")
-    public Transaction deposit(AmountRequestDTO dto) {
+    public Transaction deposit(AmountRequestDTO dto) throws InvalidException {
 
         logger.info("Request Deposit for AccNo {}", dto.getAccountNumber());
 
         if (dto.getAmount() <= 0) {
-            throw new RuntimeException("Amount must be greater than 0");
+            throw new InvalidException("Amount must be greater than zero");
         }
 
         String url = ACCOUNT_SERVICE_URL + dto.getAccountNumber() + "/balance";
@@ -55,7 +56,7 @@ public class TransactionService {
 
         if (res == null || !res.isSuccess()) {
             logger.error("Balance update FAILED! for AccNo {}", dto.getAccountNumber());
-            throw new RuntimeException(res != null ? res.getMessage() : "");
+            throw new InvalidException(res != null ? res.getMessage() : "");
         }
 
         Transaction t = new Transaction();
@@ -85,12 +86,12 @@ public class TransactionService {
 
     // Withdraw
     @CircuitBreaker(name = "accountService", fallbackMethod = "accountServiceFallback")
-    public Transaction withdraw(AmountRequestDTO dto) {
+    public Transaction withdraw(AmountRequestDTO dto) throws InvalidException {
 
         logger.info("Request Withdraw for AccNo {}", dto.getAccountNumber());
 
         if (dto.getAmount() <= 0) {
-            throw new RuntimeException("Amount must be greater than 0");
+            throw new InvalidException("Amount must be greater than 0");
         }
 
         String url = ACCOUNT_SERVICE_URL + dto.getAccountNumber() + "/balance";
@@ -103,7 +104,7 @@ public class TransactionService {
 
         if (res == null || !res.isSuccess()) {
             logger.error("Balance update FAILED! for AccNo {}", dto.getAccountNumber());
-            throw new RuntimeException(res != null ? res.getMessage() : "");
+            throw new InvalidException(res != null ? res.getMessage() : "");
         }
 
         Transaction t = new Transaction();
@@ -127,12 +128,12 @@ public class TransactionService {
 
     // Transfer
     @CircuitBreaker(name = "accountService", fallbackMethod = "accountServiceTransferFallback")
-    public Transaction transfer(TransferRequestDTO dto) {
+    public Transaction transfer(TransferRequestDTO dto) throws InvalidException {
 
         logger.info("Request Transfer from Source AccNo {} to  Destination AccNo {}", dto.getFromAccount(), dto.getToAccount());
 
         if (dto.getAmount() <= 0) {
-            throw new RuntimeException("Amount must be greater than 0");
+            throw new InvalidException("Amount must be greater than 0");
         }
 
         String fromURL = ACCOUNT_SERVICE_URL + dto.getFromAccount() + "/balance";
@@ -146,7 +147,7 @@ public class TransactionService {
         ApiResponse res1 = response1.getBody();
         if (res1 == null || !res1.isSuccess()) {
             logger.error("Debit failed for {}", dto.getFromAccount());
-            throw new RuntimeException(res1 != null ? res1.getMessage() : "");
+            throw new InvalidException(res1 != null ? res1.getMessage() : "");
         }
 
         ResponseEntity<ApiResponse> response2 = restTemplate.exchange(
@@ -157,7 +158,7 @@ public class TransactionService {
         ApiResponse res2 = response2.getBody();
         if (res2 == null || !res2.isSuccess()) {
             logger.error("Credit failed for {}", dto.getToAccount());
-            throw new RuntimeException(res2 != null ? res2.getMessage() : "");
+            throw new InvalidException(res2 != null ? res2.getMessage() : "");
         }
 
         Transaction t = new Transaction();
@@ -202,6 +203,11 @@ public class TransactionService {
     }
 
     // Fallback (deposit/withdraw)
+    public Transaction accountServiceFallback(AmountRequestDTO dto, InvalidException ex) {
+
+        throw ex;
+    }
+
     public Transaction accountServiceFallback(AmountRequestDTO dto, Throwable ex) {
         logger.error("Account Service is DOWN: {}", ex.getMessage());
 
@@ -215,6 +221,11 @@ public class TransactionService {
     }
 
     // Fallback (transfer)
+    public Transaction accountServiceTransferFallback(TransferRequestDTO dto, InvalidException ex) {
+
+        throw ex;
+    }
+
     public Transaction accountServiceTransferFallback(TransferRequestDTO dto, Throwable ex) {
         logger.error("Account Service is DOWN: {}", ex.getMessage());
 

@@ -30,12 +30,6 @@ public class TransactionServiceApplication {
     @LoadBalanced
     public RestTemplate restTemplate() {
         RestTemplate rest = new RestTemplate();
-        rest.setErrorHandler(new DefaultResponseErrorHandler(){
-            @Override
-            public boolean hasError(ClientHttpResponse response) throws IOException {
-                return false;
-            }
-        });
         return rest;
     }
 

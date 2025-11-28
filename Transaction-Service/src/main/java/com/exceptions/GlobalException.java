@@ -18,6 +18,13 @@ public class GlobalException {
 
     Logger logger = LoggerFactory.getLogger(GlobalException.class);
 
+    @ExceptionHandler(InvalidException.class)
+    public ResponseEntity<ApiResponse<?>> handleInvalidArgs(InvalidException ex){
+        logger.error("Invalid arguments provided");
+        return ResponseEntity.badRequest().body(ApiResponse.failure(ex.getMessage()));
+    }
+
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<?>> handleMethodArgs(MethodArgumentNotValidException ex){
         logger.error("Failed, Missing fields detected");
@@ -37,5 +44,7 @@ public class GlobalException {
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.failure(ex.getMessage()));
     }
+
+
 
 }

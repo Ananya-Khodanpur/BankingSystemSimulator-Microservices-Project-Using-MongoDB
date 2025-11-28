@@ -28,18 +28,18 @@ public class ApiGateWayApplication {
                 .routes()
                 .route(r->r.path("/api/accounts/**")
                         .and().method("GET","POST","PUT","DELETE")
-//                        .uri("http://localhost:8081"))
-                          .uri("http://ACCOUNT-SERVICE:8081"))
+                           .uri("http://localhost:8081"))
+//                          .uri("http://ACCOUNT-SERVICE:8081"))
 
                 .route(r->r.path("/api/transactions/**")
                         .and().method("GET","POST","PUT","DELETE")
-//                        .uri("http://localhost:8082"))
-                          .uri("http://TRANSACTION-SERVICE:8082"))
+                              .uri("http://localhost:8082"))
+//                          .uri("http://TRANSACTION-SERVICE:8082"))
 
                 .route(r->r.path("/api/notifications/**")
                         .and().method("GET","POST")
-//                        .uri("http://localhost:8083"))
-                          .uri("http://NOTIFICATION-SERVICE:8083"))
+                        .uri("http://localhost:8083"))
+//                          .uri("http://NOTIFICATION-SERVICE:8083"))
                 .build();
     }
 

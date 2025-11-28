@@ -20,19 +20,19 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AccountNotFoundException.class)
     public ResponseEntity<ApiResponse<?>> handleAccountNotFound(AccountNotFoundException ex){
-        return ResponseEntity.badRequest().body(ApiResponse.failure(ex.getMessage()));
+        return ResponseEntity.ok().body(ApiResponse.failure(ex.getMessage()));
     }
 
     @ExceptionHandler(InvalidBalnceException.class)
     public ResponseEntity<ApiResponse<?>> handleInvalidBalance(InvalidBalnceException ex){
         logger.error("Failed to update balance, due to invalid balance");
-        return ResponseEntity.badRequest().body(ApiResponse.failure(ex.getMessage()));
+        return ResponseEntity.ok().body(ApiResponse.failure(ex.getMessage()));
     }
 
     @ExceptionHandler(InvalidAccountStatusException.class)
     public ResponseEntity<ApiResponse<?>> handleInvalidStatus(InvalidAccountStatusException ex){
         logger.error("Failed to update balance, due to inactive account status");
-        return ResponseEntity.badRequest().body(ApiResponse.failure(ex.getMessage()));
+        return ResponseEntity.ok().body(ApiResponse.failure(ex.getMessage()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -44,7 +44,7 @@ public class GlobalExceptionHandler {
             String value = error.getDefaultMessage();
             errors.put(field,value);
         });
-        return ResponseEntity.badRequest().body(ApiResponse.failure("Validation errors "+ errors));
+        return ResponseEntity.ok().body(ApiResponse.failure("Validation errors "+ errors));
     }
 
     @ExceptionHandler(Exception.class)

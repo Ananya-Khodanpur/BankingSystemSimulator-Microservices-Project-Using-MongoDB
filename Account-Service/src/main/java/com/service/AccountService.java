@@ -83,7 +83,7 @@ public class AccountService {
         }
 
         double newBalance = acc.getBalance() + dto.getAmount();
-        if (newBalance <= 0) {
+        if (newBalance < 0) {
             throw new InvalidBalnceException("Insufficient balance found!");
         }
 
